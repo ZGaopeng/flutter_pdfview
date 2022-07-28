@@ -117,6 +117,33 @@
 
              PDFPage* page = [document pageAtIndex: defaultPage];
              [_pdfView goToPage: page];
+            
+            /// 修复iOS不能按照屏宽展示的问题
+            PDFPage* pageInitial = [document pageAtIndex: 0];
+            CGRect pageRectInitial = [pageInitial boundsForBox:[_pdfView displayBox]];
+            CGRect parentRectInitial = [[UIScreen mainScreen] bounds];
+            
+            if (frame.size.width > 0 && frame.size.height > 0) {
+                parentRectInitial = frame;
+            }else {
+                NSLog(@"FRAME size is 0....");
+            }
+            CGFloat scaleInitial = 1.0f;
+            CGFloat parentWidth = parentRectInitial.size.width;
+            CGFloat parentHeight = parentRectInitial.size.width;
+            
+            CGFloat pageWidth = pageRectInitial.size.width + 8;
+            CGFloat pageHeight = pageRectInitial.size.width + 10;
+            
+            CGFloat parentScale = parentWidth / parentHeight;
+            CGFloat pageScale = pageWidth / pageHeight;
+            
+            if (parentScale >= pageScale) {
+                scaleInitial = parentHeight / pageHeight;
+            } else {
+                scaleInitial = parentWidth / pageWidth;
+            }
+            _pdfView.scaleFactor = scaleInitial;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf handleRenderCompleted:[NSNumber numberWithUnsignedLong: [document pageCount]]];
